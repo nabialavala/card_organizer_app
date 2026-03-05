@@ -1,6 +1,7 @@
 import 'package:card_organizer_app/screens/cards_screen.dart';
 import 'package:flutter/material.dart';
-import 'screens/cards_screen.dart';
+import 'screens/folders_screen.dart';
+//import 'screens/folders_screen.dart';
 
 void main() {
   runApp(const CardOrganizerApp());
@@ -18,6 +19,7 @@ class CardOrganizerApp extends StatelessWidget {
         useMaterial3: true,
         primarySwatch: Colors.red,
       ),
+      home: const FoldersScreen(),  // ← changed this line
       //when we're done the final should be 'home: const FoldersScreen()'
       home: const CardsScreen(), 
     );

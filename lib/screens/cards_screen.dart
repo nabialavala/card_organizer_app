@@ -20,10 +20,53 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   Future<void> _loadCards() async{
-    final cards = await _cardRepository.getAllCards();
-    setState(() {
-      _cards = cards;
-    });
+    //adding error handling
+    try {
+      final cards = await _cardRepository.getAllCards();
+      if (!mounted) return;
+      setState(() => _cards = cards);
+    } catch (e) {
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Could not load the cards."))
+      );
+    }
+  }
+
+  Future<void> _deleteCard(PlayingCard card) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      //displays a pop up window for confirmation of deletion
+      builder: (context) => AlertDialog(
+        title: const Text("Delete this card?"),
+        content: Text('You are about to delete "${card.cardName}".'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete Card"),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try{
+      if (card.id == null) return;
+      await _cardRepository.deleteCard(card.id!);
+      await _loadCards();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Card deleted")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Could not delete")),
+      );
+    }
   }
 
   @override
@@ -60,14 +103,20 @@ class _CardsScreenState extends State<CardsScreen> {
                   IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
-                      //delete logic
+                      _deleteCard(card);
                     },
                   ),
                 ],
               ),
             );
           },
-        )
+        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          //navigtion goes here
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

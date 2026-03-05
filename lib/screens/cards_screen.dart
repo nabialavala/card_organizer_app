@@ -32,9 +32,42 @@ class _CardsScreenState extends State<CardsScreen> {
       appBar: AppBar(
         title: const Text("Cards"),
       ),
-      body: const Center(
-        child: Text("cards are here"),
-      ),
+      body: _cards.isEmpty
+        ? const Center(child: Text("Cards not found"))
+        : ListView.builder(
+          itemCount: _cards.length,
+          itemBuilder: (context, index) {
+            final card = _cards[index];
+            return ListTile(
+              leading: Image.asset(
+                card.imageUrl ?? '',
+                width: 40,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.image);
+                },
+              ),
+              title: Text(card.cardName),
+              subtitle: Text(card.suit),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      //go to the edit screen
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      //delete logic
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        )
     );
   }
 }

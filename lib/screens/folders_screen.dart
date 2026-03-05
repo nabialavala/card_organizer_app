@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:card_organizer_app/models/folder.dart';
 import 'package:card_organizer_app/repositories/folder_repository.dart';
+import 'cards_screen.dart';
 
 class FoldersScreen extends StatefulWidget {
   const FoldersScreen({super.key});
@@ -114,8 +115,16 @@ class _FoldersScreenState extends State<FoldersScreen> {
               },
             ),
 
-            onTap: () {
-              // Later you will open the cards screen here
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CardsScreen(
+                    folderId: folder.id!,
+                    folderName: folder.folderName,
+                  ),
+                ),
+              );
             },
           );
         },

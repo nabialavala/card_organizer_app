@@ -21,6 +21,9 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: _createDB,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
     );
   }
 
@@ -66,18 +69,59 @@ class DatabaseHelper {
 
   Future<void> _prepopulateCards(Database db) async {
     final suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
-    final cards = ['Ace', '2', '3', '4', '5', '6', '7', 
-                   '8', '9', '10', 'Jack', 'Queen', 'King'];
-    
+    final ranks = [
+      'Ace', '2', '3', '4', '5', '6', '7',
+      '8', '9', '10', 'Jack', 'Queen', 'King'
+    ];
+
     for (int folderId = 1; folderId <= suits.length; folderId++) {
-      for (var card in cards) {
+      final suitName = suits[folderId - 1];
+      final suitCode = _suitToCode(suitName);
+
+      for (final rank in ranks) {
+        final rankCode = _rankToCode(rank);
+        final code = '$rankCode$suitCode'; // ex: AS, 0H, KD, 7C
+        final imageUrl = 'https://deckofcardsapi.com/static/img/$code.png';
+
         await db.insert('cards', {
-          'card_name': card,
-          'suit': suits[folderId - 1],
-          'image_url': 'assets/cards/${suits[folderId - 1].toLowerCase()}_$card.png',
+          'card_name': rank,
+          'suit': suitName,
+          'image_url': imageUrl,
           'folder_id': folderId,
         });
       }
+    }
+  }
+
+  String _rankToCode(String rank) {
+    switch (rank) {
+      case 'Ace':
+        return 'A';
+      case 'Jack':
+        return 'J';
+      case 'Queen':
+        return 'Q';
+      case 'King':
+        return 'K';
+      case '10':
+        return '0'; // IMPORTANT: 10 is "0" in this image set
+      default:
+        return rank; // '2'..'9'
+    }
+  }
+
+  String _suitToCode(String suit) {
+    switch (suit) {
+      case 'Spades':
+        return 'S';
+      case 'Hearts':
+        return 'H';
+      case 'Diamonds':
+        return 'D';
+      case 'Clubs':
+        return 'C';
+      default:
+        return 'S';
     }
   }
 }

@@ -4,7 +4,13 @@ import '../repositories/card_repository.dart';
 import 'add_edit_card_screen.dart';
 
 class CardsScreen extends StatefulWidget {
-  const CardsScreen({super.key});
+  final int folderId;
+  final String folderName;
+  const CardsScreen({
+    super.key,
+    required this.folderId,
+    required this.folderName,
+  });
 
   @override
   State<CardsScreen> createState() => _CardsScreenState();
@@ -22,7 +28,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
   Future<void> _loadCards() async {
     try {
-      final cards = await _cardRepository.getAllCards();
+      final cards = await _cardRepository.getCardsByFolderId(widget.folderId);
       if (!mounted) return;
       setState(() => _cards = cards);
     } catch (e) {
@@ -101,7 +107,7 @@ class _CardsScreenState extends State<CardsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Cards"),
+        title: Text(widget.folderName),
         actions: [
           IconButton(
             onPressed: _loadCards,
@@ -117,12 +123,28 @@ class _CardsScreenState extends State<CardsScreen> {
                 final card = _cards[index];
 
                 return ListTile(
-                  leading: Image.asset(
-                    card.imageUrl ?? '',
+                  leading: SizedBox(
                     width: 40,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.image);
-                    },
+                    height: 40,
+                    child: (card.imageUrl == null || card.imageUrl!.isEmpty)
+                        ? const Icon(Icons.image)
+                        : Image.network(
+                            card.imageUrl!,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.image);
+                            },
+                          ),
                   ),
                   title: Text(card.cardName),
                   subtitle: Text(card.suit),
